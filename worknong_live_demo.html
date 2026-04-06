@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>워크농 | 통합 실전 데모</title>
+    <style>
+        :root { --main-blue: #1c52ff; --dark-navy: #08122a; --bg-gray: #f4f7f9; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--dark-navy); color: white; height: 100vh; overflow: hidden; }
+
+        .concept-badge { position: fixed; top: 15px; right: 20px; background: #ff4444; color: white; padding: 5px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 10000; }
+        .btn-blue { background: #00c8ff; color: var(--dark-navy); padding: 15px 40px; border-radius: 12px; font-size: 18px; font-weight: 800; border: none; cursor: pointer; transition: 0.2s; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        .btn-blue:hover { transform: scale(1.03); background: #fff; }
+        .btn-blue.glow { animation: glow 1.5s infinite; }
+        @keyframes glow { 0%, 100% { box-shadow: 0 0 5px #00c8ff; } 50% { box-shadow: 0 0 25px #00c8ff; } }
+
+        /* [1단계] 시연 화면 */
+        #introLayer { width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .intro-headline { text-align: center; margin-bottom: 40px; }
+        .intro-headline h1 { font-size: 32px; font-weight: 900; margin-bottom: 10px; }
+        .intro-headline h1 span { color: #00c8ff; }
+        .demo-canvas { display: flex; gap: 40px; align-items: center; justify-content: center; width: 100%; max-width: 1200px; }
+        
+        .phone { width: 320px; height: 580px; background: #b2c7d9; border: 8px solid #333; border-radius: 40px; overflow: hidden; display: flex; flex-direction: column; flex-shrink: 0; }
+        .p-header { background: #a9bdce; padding: 15px; font-size: 14px; font-weight: bold; color: #1a1a1a; text-align: center; }
+        .p-body { flex-grow: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
+        .msg { display: flex; gap: 8px; animation: msgIn 0.3s ease-out; }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .bubble { background: white; color: #1a1a1a; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.4; max-width: 85%; }
+        .bubble.red { background: #fff0f0; border: 1px solid #ffcccc; color: #d00; }
+
+        .data-card { width: 700px; height: 580px; background: white; border-radius: 25px; overflow: hidden; display: flex; flex-direction: column; color: #333; position: relative; }
+        .card-header { background: var(--main-blue); padding: 18px 25px; color: white; display: flex; justify-content: space-between; align-items: center; }
+        .table-area { flex-grow: 1; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8f9fa; text-align: left; padding: 12px 25px; font-size: 11px; color: #888; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 10; }
+        td { padding: 18px 25px; font-size: 14px; border-bottom: 1px solid #f8f9fa; transition: background-color 0.5s; }
+        .row-upd { animation: flash 1.2s ease-out; }
+        @keyframes flash { from { background-color: #ffe58f; } to { background-color: transparent; } }
+
+        .s-badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-right: 8px; color: white; }
+        .bg-blue { background: var(--main-blue); } .bg-red { background: #ff4444; } .bg-orange { background: #ff9800; }
+        .card-footer { padding: 25px; text-align: center; border-top: 1px solid #eee; }
+
+        #toastArea { position: absolute; top: 70px; right: 25px; z-index: 100; pointer-events: none; }
+        .toast { background: #333; color: white; padding: 10px 15px; border-radius: 8px; font-size: 12px; margin-bottom: 8px; border-left: 4px solid #ff4444; animation: toastIn 0.4s ease-out; }
+        @keyframes toastIn { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* [2단계] 리포트 */
+        #reportLayer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(8, 18, 42, 0.98); z-index: 5000; flex-direction: column; align-items: center; justify-content: center; }
+        .report-card { background: white; color: #333; width: 500px; border-radius: 30px; padding: 40px; }
+        .s-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #eee; font-size: 18px; }
+
+        /* [3단계] 본사 관리 (Full App) */
+        #hqLayer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-gray); z-index: 8000; color: #333; }
+        .hq-frame { display: flex; width: 100%; height: 100%; }
+        .sidebar { width: 220px; background: var(--dark-navy); color: white; display: flex; flex-direction: column; padding: 30px 0; flex-shrink: 0; }
+        .sidebar-logo { padding: 0 25px; font-weight: 900; font-size: 20px; margin-bottom: 40px; color: #00c8ff; }
+        .nav-item { padding: 16px 25px; cursor: pointer; color: #8899aa; font-size: 14px; font-weight: bold; border-left: 4px solid transparent; transition: 0.2s; }
+        .nav-item:hover { color: white; background: rgba(255,255,255,0.05); }
+        .nav-item.active { background: #1c2a4a; color: white; border-left-color: #00c8ff; }
+        
+        .hq-main { flex-grow: 1; display: flex; flex-direction: column; height: 100vh; }
+        .hq-header { padding: 30px 40px 15px 40px; display: flex; justify-content: space-between; align-items: center; background: var(--bg-gray); position: sticky; top: 0; z-index: 100; }
+        .hq-header h2 { font-size: 24px; font-weight: 800; margin: 0; }
+        .hq-content { flex-grow: 1; padding: 0 40px 40px 40px; overflow-y: auto; }
+        
+        .hq-card { background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee; overflow: hidden; margin-bottom: 20px; }
+        .panel { display: none; flex-direction: column; }
+        .panel.active { display: flex; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .btn-sm { padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: bold; border: none; cursor: pointer; color: white; display: inline-flex; align-items: center; }
+    </style>
+</head>
+<body>
+
+    <div class="concept-badge">CONCEPT DEMO</div>
+
+    <!-- 1단계: 시연 -->
+    <div id="introLayer">
+        <div class="intro-headline">
+            <h1>쏟아지는 공구 채팅, 아직도 <span>수기로 정리하시나요?</span></h1>
+            <p>워크농은 실시간으로 중복 주문을 합산하고, <strong>취소/변경 사항을 즉시 반영합니다.</strong></p>
+        </div>
+        <div class="demo-canvas">
+            <div class="phone"><div class="p-header">🛒 동네 공구 특가방</div><div class="p-body" id="chatBody"></div></div>
+            <div style="font-size: 35px; color: #00c8ff;">➡</div>
+            <div class="data-card">
+                <div class="card-header"><h3>📊 실시간 데이터 자동 업데이트 (점주 뷰)</h3><div style="font-size:10px; background:rgba(255,255,255,0.2); padding:4px 10px; border-radius:20px;" id="aiStatus">● 실시간 분석 중</div></div>
+                <div id="toastArea"></div>
+                <div class="table-area"><table><thead><tr><th>닉네임</th><th>최신 채팅</th><th>주문 결과</th></tr></thead><tbody id="dbBody"></tbody></table></div>
+                <div class="card-footer"><button class="btn-blue" id="finishBtn" onclick="goStep2()">오늘 공구 마감하기 ➡</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2단계: 리포트 -->
+    <div id="reportLayer">
+        <div class="report-card">
+            <h2 style="text-align:center; color:var(--main-blue); font-weight:900; margin-bottom:25px;">📊 정산 마감 리포트</h2>
+            <div class="s-row"><span>총 수집 채팅</span> <strong>247건</strong></div>
+            <div class="s-row"><span>취소/변경 처리</span> <strong>12건 (완료)</strong></div>
+            <div style="height:20px;"></div>
+            <div style="background:#f8f9fa; padding:20px; border-radius:15px; border:1px solid #eee;">
+                <div class="s-row" style="border:none; padding-top:0;"><span>꿀고구마 5kg</span> <strong style="color:var(--main-blue); font-size:22px;">48박스</strong></div>
+                <div class="s-row" style="border:none; padding-bottom:0; margin-top:5px;"><span>한돈 제육볶음</span> <strong style="color:var(--main-blue); font-size:22px;">35팩</strong></div>
+            </div>
+            <button class="btn-blue" style="width:100%; margin-top:30px;" onclick="goStep3()">본사 통합 시스템 확인 ➡</button>
+        </div>
+    </div>
+
+    <!-- 3단계: 본사 관리 -->
+    <div id="hqLayer">
+        <div class="hq-frame">
+            <div class="sidebar">
+                <div class="sidebar-logo">WORKNONG</div>
+                <div class="nav-item" onclick="switchHq('p1')">대시보드</div>
+                <div class="nav-item active" id="m-p1" onclick="switchHq('p1')">발주확인</div>
+                <div class="nav-item" id="m-p2" onclick="switchHq('p2')">상품관리</div>
+                <div class="nav-item" id="m-p3" onclick="switchHq('p3')">지점관리</div>
+            </div>
+            <div class="hq-main">
+                <div class="hq-header">
+                    <h2 id="hqTitle">발주확인</h2>
+                    <div id="btn-group1" style="display:flex; gap:8px;"><button class="btn-sm" style="background:#15bb66;">📥 엑셀 다운로드</button><button class="btn-sm" style="background:var(--dark-navy);">✅ 발주 확정</button></div>
+                    <div id="btn-group2" style="display:none;"><button class="btn-sm" style="background:var(--dark-navy);">+ 상품 추가</button></div>
+                </div>
+                <div class="hq-content">
+                    <div id="p1" class="panel active"><div class="hq-card"><table style="width:100%;"><thead><tr><th style="padding:15px 25px;">상품명</th><th style="text-align:right;">참여 지점</th><th style="text-align:right; padding:15px 25px;">총 발주 수량</th></tr></thead><tbody><tr><td style="padding:18px 25px; font-weight:bold;">해남 꿀고구마 5kg</td><td style="text-align:right;">142</td><td style="text-align:right; padding:18px 25px; font-weight:900; color:var(--main-blue);">3,240</td></tr><tr><td style="padding:18px 25px; font-weight:bold;">한돈 제육볶음 (300g)</td><td style="text-align:right;">128</td><td style="text-align:right; padding:18px 25px; font-weight:900; color:var(--main-blue);">2,850</td></tr></tbody></table></div></div>
+                    <div id="p2" class="panel"><div style="margin-bottom:20px;"><span style="padding:8px 18px; background:#333; color:white; border-radius:20px; font-size:12px; font-weight:bold;">전체(40)</span></div><div class="hq-card"><table style="width:100%;"><thead><tr><th style="padding:15px 25px;">상품명</th><th>판매가</th><th>상태</th></tr></thead><tbody><tr><td style="padding:18px 25px; font-weight:bold;">제육볶음</td><td>9,800원</td><td style="color:#15bb66; font-weight:bold;">● 판매중</td></tr><tr><td style="padding:18px 25px; font-weight:bold;">소불고기</td><td>12,800원</td><td style="color:#15bb66; font-weight:bold;">● 판매중</td></tr></tbody></table></div></div>
+                    <div id="p3" class="panel"><div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;"><div class="hq-card" style="padding:25px;"><h4>강남점</h4><p style="color:var(--main-blue); font-weight:bold; margin-top:10px;">카톡 주문 86%</p></div><div class="hq-card" style="padding:25px;"><h4>서초점</h4><p style="color:var(--main-blue); font-weight:bold; margin-top:10px;">카톡 주문 43%</p></div></div></div>
+                </div>
+                <p style="text-align:center; padding:20px; font-size:12px; color:#99aabb;">⚠️ CONCEPT DEMO | <button style="background:none; border:none; color:#666; text-decoration:underline; cursor:pointer;" onclick="location.reload()">처음으로</button></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatBody = document.getElementById('chatBody');
+        const dbBody = document.getElementById('dbBody');
+        const toastArea = document.getElementById('toastArea');
+        const rows = {};
+
+        const scenario = [
+            { n: '지호맘', t: '고구마 1박스 주문이요!', i: '꿀고구마(1)', s: 'order' },
+            { n: '대치댁', t: '제육 2팩 부탁드려요~', i: '제육볶음(2)', s: 'order' },
+            { n: '수원아빠', t: '고구마 1박스, 파김치 하나', i: '고구마(1), 파김치(1)', s: 'order' },
+            { n: '지호맘', t: '사장님 고구마 2박스로 변경할게요!!', i: '꿀고구마(2)', s: 'change' },
+            { n: '동탄새댁', t: '고구마 1개, 파김치 1개 주문!', i: '고구마(1), 파김치(1)', s: 'order' },
+            { n: '대치댁', t: '죄송합니다 ㅠㅠ 제육 주문 취소할게요', i: '제육 취소', s: 'cancel' },
+            { n: '별빛', t: '파김치 2개 주문합니다', i: '파김치(2)', s: 'order' },
+            { n: '은하수', t: '저도 제육 1팩 추가요!', i: '제육볶음(1)', s: 'order' },
+            { n: '동탄새댁', t: '아까꺼 취소하고 고구마 2개로 바꿀게요!', i: '꿀고구마(2)', s: 'change' }
+        ];
+
+        let idx = 0;
+        function play() {
+            if (idx >= scenario.length) {
+                document.getElementById('aiStatus').innerHTML = '● 분석 완료';
+                document.getElementById('aiStatus').style.background = '#15bb66';
+                document.getElementById('finishBtn').classList.add('glow');
+                return;
+            }
+            const item = scenario[idx++];
+            const isAlert = item.s !== 'order';
+            chatBody.insertAdjacentHTML('beforeend', `<div class="msg"><div class="pfp" style="background:hsl(${Math.random()*360},60%,80%)"></div><div class="bubble ${isAlert?'red':''}"><strong>${item.n}</strong><br>${item.t}</div></div>`);
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            if (isAlert) {
+                const t = document.createElement('div'); t.className = 'toast';
+                t.innerHTML = `⚠️ <strong>${item.n}</strong>님의 ${item.s==='cancel'?'취소':'변경'} 요청!`;
+                toastArea.appendChild(t); setTimeout(() => t.remove(), 3500);
+            }
+
+            setTimeout(() => {
+                let badge = item.s==='cancel'?'bg-red':(item.s==='change'?'bg-orange':'bg-blue');
+                let tag = item.s==='cancel'?'취소요청':(item.s==='change'?'변경안내':'주문접수');
+                let resHTML = `<span class="s-badge ${badge}">${tag}</span><span style="font-weight:bold; color:${item.s==='order'?'var(--main-blue)':'#333'}">${item.i}</span>`;
+
+                if (rows[item.n]) {
+                    const tr = rows[item.n];
+                    tr.cells[1].innerHTML = `<span style="color:#999">"${item.t.substring(0,12)}..."</span>`;
+                    tr.cells[2].innerHTML = resHTML;
+                    tr.classList.remove('row-upd'); void tr.offsetWidth; tr.classList.add('row-upd');
+                    dbBody.insertBefore(tr, dbBody.firstChild);
+                } else {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${item.n}</td><td style="color:#999">"${item.t.substring(0,12)}..."</td><td>${resHTML}</td>`;
+                    dbBody.insertBefore(tr, dbBody.firstChild);
+                    rows[item.n] = tr;
+                }
+            }, 600);
+            setTimeout(play, 3500);
+        }
+
+        function goStep2() { document.getElementById('introLayer').style.display='none'; document.getElementById('reportLayer').style.display='flex'; }
+        function goStep3() { document.getElementById('reportLayer').style.display='none'; document.getElementById('hqLayer').style.display='block'; }
+        
+        function switchHq(id) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.getElementById('m-'+id).classList.add('active');
+            document.getElementById('hqTitle').innerText = (id==='p1'?'발주확인':id==='p2'?'상품관리':'지점관리');
+            document.getElementById('btn-group1').style.display = (id==='p1'?'flex':'none');
+            document.getElementById('btn-group2').style.display = (id==='p2'?'block':'none');
+        }
+        setTimeout(play, 1500);
+    </script>
+</body>
+</html>

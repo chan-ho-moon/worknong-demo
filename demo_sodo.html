@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>워크농 | 소도몰 시연 데모</title>
+    <style>
+        :root { --main-blue: #1c52ff; --dark-navy: #08122a; --sodo-green: #60b08d; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--dark-navy); color: white; height: 100vh; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .concept-badge { position: fixed; top: 15px; right: 20px; background: #ff4444; color: white; padding: 5px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 10000; }
+        .btn-blue { background: #00c8ff; color: var(--dark-navy); padding: 15px 40px; border-radius: 12px; font-size: 18px; font-weight: 800; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-blue:hover { transform: scale(1.03); background: #fff; }
+        .btn-blue.glow { animation: glow 1.5s infinite; }
+        @keyframes glow { 0%, 100% { box-shadow: 0 0 5px #00c8ff; } 50% { box-shadow: 0 0 25px #00c8ff; } }
+        
+        #introLayer { width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .intro-headline { text-align: center; margin-bottom: 40px; }
+        .intro-headline h1 { font-size: 32px; font-weight: 900; margin-bottom: 10px; }
+        .intro-headline h1 span { color: #00c8ff; }
+        
+        .demo-canvas { display: flex; gap: 40px; align-items: center; justify-content: center; width: 100%; max-width: 1200px; }
+        .phone { width: 320px; height: 580px; background: var(--sodo-green); border: 8px solid #333; border-radius: 40px; overflow: hidden; display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .p-header { background: rgba(0,0,0,0.1); padding: 15px; font-size: 13px; font-weight: bold; color: white; text-align: center; }
+        .p-body { flex-grow: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
+        .p-body::-webkit-scrollbar { width: 4px; }
+        .msg { display: flex; gap: 8px; animation: msgIn 0.3s ease-out; }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .pfp { width: 32px; height: 32px; border-radius: 12px; background: #eee; flex-shrink: 0; }
+        .bubble { background: white; color: #1a1a1a; padding: 10px 14px; border-radius: 12px; font-size: 13px; max-width: 85%; }
+        .bubble.admin { background: #333; color: #fff; }
+        .notice { background: rgba(0,0,0,0.2); color: white; font-size: 11px; padding: 5px 15px; border-radius: 20px; align-self: center; margin: 10px 0; }
+
+        .data-card { width: 700px; height: 580px; background: white; border-radius: 25px; overflow: hidden; display: flex; flex-direction: column; color: #333; position: relative; }
+        .card-header { background: var(--main-blue); padding: 18px 25px; color: white; display: flex; justify-content: space-between; align-items: center; }
+        .table-area { flex-grow: 1; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8f9fa; text-align: left; padding: 12px 25px; font-size: 11px; color: #888; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 10; }
+        td { padding: 18px 25px; font-size: 14px; border-bottom: 1px solid #f8f9fa; transition: background-color 0.5s; }
+        .row-upd { animation: flash 1.2s ease-out; }
+        @keyframes flash { from { background-color: #ffe58f; } to { background-color: transparent; } }
+        .s-badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-right: 8px; color: white; }
+        .bg-blue { background: var(--main-blue); } .bg-red { background: #ff4444; } .bg-orange { background: #ff9800; }
+        .card-footer { padding: 25px; text-align: center; border-top: 1px solid #eee; }
+        
+        #toastArea { position: absolute; top: 70px; right: 25px; z-index: 100; pointer-events: none; }
+        .toast { background: #333; color: white; padding: 10px 15px; border-radius: 8px; font-size: 12px; margin-bottom: 8px; border-left: 4px solid #ff4444; animation: toastIn 0.4s ease-out; }
+        @keyframes toastIn { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        #reportLayer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(8, 18, 42, 0.98); z-index: 5000; flex-direction: column; align-items: center; justify-content: center; }
+        .report-card { background: white; color: #333; width: 500px; border-radius: 30px; padding: 40px; }
+        .s-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #eee; font-size: 18px; }
+        #hqLayer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f7f9; z-index: 8000; color: #333; }
+        .hq-frame { display: flex; width: 100%; height: 100%; }
+        .sidebar { width: 220px; background: var(--dark-navy); color: white; display: flex; flex-direction: column; padding: 30px 0; flex-shrink: 0; }
+        .sidebar-logo { padding: 0 25px; font-weight: 900; font-size: 20px; margin-bottom: 40px; color: #00c8ff; }
+        .nav-item { padding: 16px 25px; cursor: pointer; color: #8899aa; font-size: 14px; font-weight: bold; border-left: 4px solid transparent; transition: 0.2s; }
+        .nav-item.active { background: #1c2a4a; color: white; border-left-color: #00c8ff; }
+        .hq-main { flex-grow: 1; display: flex; flex-direction: column; height: 100vh; }
+        .hq-header { padding: 30px 40px 15px 40px; display: flex; justify-content: space-between; align-items: center; background: #f4f7f9; position: sticky; top: 0; z-index: 100; }
+        .hq-header h2 { font-size: 24px; font-weight: 800; }
+        .hq-content { flex-grow: 1; padding: 0 40px 40px 40px; overflow-y: auto; }
+        .hq-card { background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee; overflow: hidden; margin-bottom: 20px; }
+        .panel { display: none; flex-direction: column; }
+        .panel.active { display: flex; }
+        .btn-sm { padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: bold; border: none; cursor: pointer; color: white; }
+    </style>
+</head>
+<body>
+    <div class="concept-badge">CONCEPT DEMO</div>
+    <div id="introLayer">
+        <div class="intro-headline"><h1>소도몰 공구 채팅, 아직도 <span>수기로 정리하시나요?</span></h1><p>워크농은 뒷번호와 옵션이 섞인 복잡한 채팅도 정확히 판독하여 장부를 완성합니다.</p></div>
+        <div class="demo-canvas">
+            <div class="phone"><div class="p-header">🛒 소도몰 수원매탄점 714</div><div class="p-body" id="chatBody"></div></div>
+            <div style="font-size: 35px; color: #00c8ff;">➡</div>
+            <div class="data-card">
+                <div class="card-header"><h3>📊 소도몰 실시간 주문 장부</h3><div style="font-size:10px; background:rgba(255,255,255,0.2); padding:4px 10px; border-radius:20px;" id="aiStatus">● 실시간 트래킹 중</div></div>
+                <div id="toastArea"></div>
+                <div class="table-area"><table><thead><tr><th>닉네임</th><th>최신 채팅</th><th>인식 결과</th></tr></thead><tbody id="dbBody"></tbody></table></div>
+                <div class="card-footer"><button class="btn-blue" id="finishBtn" onclick="goStep2()">오늘 공구 마감하기 ➡</button></div>
+            </div>
+        </div>
+    </div>
+    <div id="reportLayer">
+        <div class="report-card">
+            <h2 style="text-align:center; color:var(--main-blue); font-weight:900; margin-bottom:25px;">📊 소도몰 정산 마감</h2>
+            <div class="s-row"><span>수집된 채팅</span> <strong>182건</strong></div>
+            <div style="height:20px;"></div>
+            <div style="background:#f8f9fa; padding:20px; border-radius:15px; border:1px solid #eee;">
+                <div class="s-row" style="border:none; padding-top:0;"><span>스파출러 (베이지)</span> <strong style="color:var(--main-blue); font-size:22px;">32개</strong></div>
+                <div class="s-row" style="border:none; padding-bottom:0; margin-top:5px;"><span>황태해장국</span> <strong style="color:var(--main-blue); font-size:22px;">25개</strong></div>
+            </div>
+            <button class="btn-blue" style="width:100%; margin-top:30px;" onclick="goStep3()">본사 통합 시스템 확인 ➡</button>
+        </div>
+    </div>
+    <div id="hqLayer">
+        <div class="hq-frame">
+            <div class="sidebar"><div class="sidebar-logo">WORKNONG</div><div class="nav-item active">발주확인</div><div class="nav-item">상품관리</div><div class="nav-item">지점관리</div></div>
+            <div class="hq-main"><div class="hq-header"><h2>발주확인</h2><div style="display:flex; gap:8px;"><button class="btn-sm" style="background:#15bb66;">📥 엑셀</button><button class="btn-sm" style="background:var(--dark-navy);">✅ 확정</button></div></div>
+            <div class="hq-content"><div class="hq-card"><table style="width:100%;"><thead><tr><th style="padding:15px 25px;">상품명</th><th style="text-align:right;">총 수량</th></tr></thead><tbody><tr><td style="padding:18px 25px; font-weight:bold;">스파출러</td><td style="text-align:right; font-weight:bold; color:var(--main-blue);">1,420</td></tr></tbody></table></div></div>
+            <p style="text-align:center; padding:20px; font-size:12px; color:#99aabb;">⚠️ CONCEPT DEMO | <button style="background:none; border:none; color:#666; text-decoration:underline; cursor:pointer;" onclick="location.reload()">처음으로</button></p></div>
+        </div>
+    </div>
+    <script>
+        const chatBody = document.getElementById('chatBody');
+        const dbBody = document.getElementById('dbBody');
+        const toastArea = document.getElementById('toastArea');
+        const rows = {};
+        const scenario = [
+            { n: '쭈님', t: '7666 스파출러 (베이지)2', i: '스파출러(2)', s: 'order' },
+            { n: '매탄동감자', t: '공구마감되었습니다 노쇼 대기로 체크해두겠습니다 🙏', i: '시스템 안내', s: 'notice', admin: true },
+            { n: '라이언 3141', t: '3141 이지쇼츠 카키 1(XL), 베이지 1(XL)', i: '이지쇼츠(2)', s: 'order' },
+            { n: '매탄동감자', t: '❌ 베이지 XL 마감되었습니다 ❌', i: '재고 마감 공지', s: 'notice', admin: true },
+            { n: '아야0653', t: '0653 황태해장국 2', i: '황태해장국(2)', s: 'order' },
+            { n: '쭈님', t: '사장님 아까 스파출러 주문한거 취소할게요 ㅠㅠ', i: '스파출러 취소', s: 'cancel' }
+        ];
+        let idx = 0;
+        function play() {
+            if (idx >= scenario.length) { document.getElementById('aiStatus').innerHTML = '● 분석 완료'; document.getElementById('aiStatus').style.background = '#15bb66'; document.getElementById('finishBtn').classList.add('glow'); return; }
+            const item = scenario[idx++];
+            if (item.s === 'notice') {
+                chatBody.insertAdjacentHTML('beforeend', `<div class="notice">${item.t}</div>`);
+            } else {
+                chatBody.insertAdjacentHTML('beforeend', `<div class="msg"><div class="pfp"></div><div class="bubble ${item.admin?'admin':''}"><strong>${item.n}</strong><br>${item.t}</div></div>`);
+            }
+            chatBody.scrollTop = chatBody.scrollHeight;
+            if (item.s === 'cancel') {
+                const t = document.createElement('div'); t.className = 'toast';
+                t.innerHTML = `⚠️ <strong>${item.n}</strong>님의 취소 요청 감지!`;
+                toastArea.appendChild(t); setTimeout(() => t.remove(), 3500);
+            }
+            if (item.s !== 'notice') {
+                setTimeout(() => {
+                    let badge = item.s==='cancel'?'bg-red':'bg-blue';
+                    let tag = item.s==='cancel'?'취소요청':'주문접수';
+                    let resHTML = `<span class="s-badge ${badge}">${tag}</span><span style="font-weight:bold;">${item.i}</span>`;
+                    if (rows[item.n]) {
+                        const tr = rows[item.n];
+                        tr.cells[1].innerHTML = `<span style="color:#999">"${item.t.substring(0,12)}..."</span>`;
+                        tr.cells[2].innerHTML = resHTML;
+                        tr.classList.remove('row-upd'); void tr.offsetWidth; tr.classList.add('row-upd');
+                        dbBody.insertBefore(tr, dbBody.firstChild);
+                    } else {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `<td>${item.n}</td><td style="color:#999">"${item.t.substring(0,12)}..."</td><td>${resHTML}</td>`;
+                        dbBody.insertBefore(tr, dbBody.firstChild);
+                        rows[item.n] = tr;
+                    }
+                }, 600);
+            }
+            setTimeout(play, 3500);
+        }
+        function goStep2() { document.getElementById('introLayer').style.display='none'; document.getElementById('reportLayer').style.display='flex'; }
+        function goStep3() { document.getElementById('reportLayer').style.display='none'; document.getElementById('hqLayer').style.display='block'; }
+        setTimeout(play, 1500);
+    </script>
+</body>
+</html>
