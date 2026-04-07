@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>챗픽(ChatPick) 주요 기능 및 CRM 명세서</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+    :root {
+        --primary: #1C52FF;
+        --navy: #0A1A3F;
+        --bg-color: #F4F7FB;
+        --text-main: #111111;
+        --text-sub: #555555;
+        --border-color: #E2E8F0;
+        
+        --red-accent: #FF3B30;
+        --yellow-accent: #FF9F0A;
+        --blue-accent: #32ADE6;
+        --gold-accent: #BF5AF2;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        line-height: 1.6;
+        padding: 40px 20px;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(10, 26, 63, 0.05);
+        overflow: hidden;
+    }
+
+    .header {
+        background: var(--navy);
+        color: #ffffff;
+        padding: 40px;
+        text-align: center;
+    }
+
+    .header h1 {
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+
+    .header h1 span {
+        color: #00C8FF;
+    }
+
+    .header p {
+        font-size: 16px;
+        color: #A0ABC0;
+    }
+
+    .content {
+        padding: 40px;
+    }
+
+    .section {
+        margin-bottom: 50px;
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .section-title .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 12px;
+    }
+
+    .dot.red { background-color: var(--red-accent); }
+    .dot.yellow { background-color: var(--yellow-accent); }
+    .dot.blue { background-color: var(--blue-accent); }
+    .dot.gold { background-color: var(--gold-accent); }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #ffffff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+
+    th, td {
+        padding: 20px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+        background-color: #F8FAFC;
+        font-weight: 700;
+        color: var(--navy);
+        font-size: 15px;
+        white-space: nowrap;
+    }
+
+    .td-num {
+        width: 5%;
+        font-weight: 800;
+        color: var(--primary);
+        font-size: 18px;
+        text-align: center;
+    }
+
+    .td-name {
+        width: 20%;
+        font-weight: 700;
+        font-size: 16px;
+        color: #2D3748;
+    }
+
+    .td-desc {
+        width: 75%;
+        font-size: 15px;
+        color: var(--text-sub);
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    tr:hover {
+        background-color: #F8FAFC;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1><span>챗픽(ChatPick)</span> 주요 기능 및 CRM 명세서</h1>
+        <p>현장 실무자가 직관적으로 이해할 수 있는 기능 중심 설명</p>
+    </div>
+
+    <div class="content">
+        <!-- 1. Core v1 -->
+        <div class="section">
+            <h2 class="section-title"><div class="dot red"></div>주문 취합 및 운영 자동화 (점주용)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="td-num">No</th>
+                        <th class="td-name">기능명</th>
+                        <th class="td-desc">상세 설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="td-num">1</td>
+                        <td class="td-name">주문 수집</td>
+                        <td class="td-desc">채팅방에 올라오는 댓글에서 <strong>닉네임과 상품 이름, 수량</strong>은 수집하여 확인할 수 있도록 됨.</td>
+                    </tr>
+                    <tr>
+                        <td class="td-num">2</td>
+                        <td class="td-name">취소 수집</td>
+                        <td class="td-desc">고객이 남긴 취소 관련 댓글을 인식하여, 취소 요청 내역을 따로 수집함.</td>
+                    </tr>
+                    <tr>
+                        <td class="td-num">3</td>
+                        <td class="td-name">변경 수집</td>
+                        <td class="td-desc">고객이 남긴 수량이나 상품 변경 관련 댓글을 인식하여, 변경 내역을 따로 수집함.</td>
+                    </tr>
+                    <tr>
+                        <td class="td-num">4</td>
+                        <td class="td-name">취소, 변경 알림</td>
+                        <td class="td-desc">채팅 속에 섞인 취소, 변경 메시지를 놓치지 않도록 화면 한쪽에 알림으로 띄워줌.</td>
+                    </tr>
+                    <tr>
+                        <td class="td-num">5</td>
+                        <td class="td-name">고객용 실시간 페이지</td>
+                        <td class="td-desc">고객이 따로 제공된 링크에 들어가서 본인 닉네임을 검색하면, 접수된 주문 내역을 실시간으로 확인할 수 있음.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 2. Sales & Ops -->
+        <div class="section">
+            <h2 class="section-title"><div class="dot yellow"></div>매출 촉진 및 현장 픽업 관리</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="td-num">No</th>
+                        <th class="td-name">기능명</th>
+                        <th class="td-desc">상세 설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="td-num">6</td>
+                        <td class="td-name">마감 임박 알림</td>
+                        <td class="td-desc">설정한 한정 수량의 재고가 거의 다 소진되었을 때, 채팅방에 자동으로 마감 임박 안내 메시지를 보내줌.</td>
+                    </tr>
+                    <tr>
+                        <td class="td-num">7</td>
+                        <td class="td-name">합배송 자동 병합</td>
+                        <td class="td-desc">같은 닉네임으로 여러 번 나누어 주문이 들어와도, 하나로 합쳐서 보여줌.</td>
+                    </tr>
+                    <tr>
+                        <td class="td-num">8</td>
+                        <td class="td-name">픽업 현황 체크</td>
+                        <td class="td-desc">현장에 고객이 물건을 찾으러 오면 수령 완료 처리를 하고, 아직 안 찾아간 사람을 확인할 수 있음.</td>
+                    </tr>
+                    <tr>
+                        <td class="td-num">9</td>
+                        <td class="td-name">우수 고객 표시</td>
+                        <td class="td-desc">누적 구매 횟수를 바탕으로 물건을 찾으러 온 고객이 우수 고객인지 화면에 표시해 줌.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 3. HQ View -->
+        <div class="section">
+            <h2 class="section-title"><div class="dot blue"></div>데이터 통합 관제 (본사용)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="td-num">No</th>
+                        <th class="td-name">기능명</th>
+                        <th class="td-desc">상세 설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="td-num">10</td>
+                        <td class="td-name">전 지점 대시보드</td>
+                        <td class="td-desc">본사에서 여러 가맹점들의 실시간 주문 현황과 판매 데이터를 하나의 화면에서 모아 볼 수 있음.</td>
+                    </tr>
+                    <tr>
+                        <td class="td-num">11</td>
+                        <td class="td-name">신상품 수요 측정</td>
+                        <td class="td-desc">새로운 상품을 올렸을 때, 초기에 댓글이 달리는 속도를 분석해 줌.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 4. CRM Extensions -->
+        <div class="section">
+            <h2 class="section-title"><div class="dot gold"></div>단골 관리 (CRM) 아이디어</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="td-num">ID</th>
+                        <th class="td-name">기능명</th>
+                        <th class="td-desc">상세 설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="td-num">C1</td>
+                        <td class="td-name">첫 구매 고객 표시</td>
+                        <td class="td-desc">우리 매장에서 처음 주문한 사람을 파악해서, 물건을 찾으러 올 때 따로 표시해 줌.</td>
+                    </tr>
+                    <tr>
+                        <td class="td-num">C2</td>
+                        <td class="td-name">이탈 의심 고객 알림</td>
+                        <td class="td-desc">꾸준히 주문하다가 최근 들어 주문이 없는 고객을 파악하여 알려줌.</td>
+                    </tr>
+                    <tr>
+                        <td class="td-num">C3</td>
+                        <td class="td-name">구매 등급 표시</td>
+                        <td class="td-desc">고객용 주문 확인 페이지에 고객의 현재 구매 등급을 시각적으로 보여줌.</td>
+                    </tr>
+                    <tr>
+                        <td class="td-num">C4</td>
+                        <td class="td-name">선호 품목 표시</td>
+                        <td class="td-desc">고객이 자주 사는 품목(예: 과일, 고기)을 파악하여 닉네임 옆에 표시해 줌.</td>
+                    </tr>
+                    <tr>
+                        <td class="td-num">C5</td>
+                        <td class="td-name">우수 고객 알림</td>
+                        <td class="td-desc">주문을 가장 많이 하는 우수 고객이 방문했을 때 알림을 띄워 특별히 챙겨줄 수 있게 함.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>
